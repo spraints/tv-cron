@@ -17,4 +17,4 @@ fi
 
 set -x
 touch /var/log/cron.log
-cron && tail /var/log/cron.log
+cron && tail -f /var/log/cron.log
