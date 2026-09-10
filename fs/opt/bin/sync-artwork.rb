@@ -8,7 +8,6 @@ require "yaml"
 
 def main
   frame_host = ENV["FRAME_TV_ADDR"] or raise "FRAME_TV_ADDR must be set in the environment"
-  frame_mac  = ENV["FRAME_TV_MAC"]  or raise "FRAME_TV_MAC must be set in the environment"
   data_dir   = ENV["DATA_DIR"]      or raise "DATA_DIR must be set in the environment"
 
   state_file = File.join(data_dir, "state.yml")
@@ -18,19 +17,11 @@ def main
   today = now.strftime("%Y-%m-%d")
   state = State.new(state_file)
 
-  wol = Thread.new do
-    puts "Waking up TV ..."
-    system_must "samsungtv", "--host", frame_host, "--token-file", token_file,
-      "wol", frame_mac
-  end
-
   today_image_info = state["images"].find { |i| i["date"] == today }
   if today_image_info.nil?
     puts "[#{today}] Getting wikiart's image of the day..."
     image_url = get_wikiart_image_of_the_day
     puts "==> #{image_url}"
-
-    wol.value
 
     IO.popen(["samsungtv", "--host", frame_host, "--token-file", token_file,
               "art-upload", "--url", image_url]) do |f|
@@ -58,7 +49,6 @@ def main
 
     if mode == "on"
       puts "Setting artwork to #{today_image_info.inspect}"
-      wol.value
       system_must "samsungtv", "--host", frame_host, "--token-file", token_file,
         "art-display", today_image_info.fetch("content_id")
     end
