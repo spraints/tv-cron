@@ -15,6 +15,13 @@ if ! $ok; then
   exit 1
 fi
 
+(
+  printf 'PATH=/usr/bin:/bin\n'
+  printf '%s /opt/with-venv /opt/bin/sync-artwork.rb' \
+    "${CRON_SCHEDULE:-0 10 * * *}"
+  echo
+) > /etc/cron.d/frame-art
+
 set -x
 touch /var/log/cron.log
 cron && tail -f /var/log/cron.log
