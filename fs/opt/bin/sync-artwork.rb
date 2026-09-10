@@ -51,10 +51,18 @@ def main
     end
   end
 
-  puts "Setting artwork to #{today_image_info.inspect}"
-  wol.value
-  system_must "samsungtv", "--host", frame_host, "--token-file", token_file,
-    "art-display", today_image_info.fetch("content_id")
+  IO.popen(["samsungtv", "--host", frame_host, "--token-file", token_file,
+            "art-mode"]) do |f|
+    mode = f.read.strip
+    puts "*** Art mode is currently #{mode} ***"
+
+    if mode == "on"
+      puts "Setting artwork to #{today_image_info.inspect}"
+      wol.value
+      system_must "samsungtv", "--host", frame_host, "--token-file", token_file,
+        "art-display", today_image_info.fetch("content_id")
+    end
+  end
 end
 
 class State
