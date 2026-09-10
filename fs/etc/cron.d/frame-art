@@ -1,0 +1,2 @@
+PATH=/usr/bin:/bin
+0 10 * * * /opt/with-venv /opt/bin/sync-artwork.rb
