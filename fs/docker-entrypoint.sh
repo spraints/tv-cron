@@ -13,8 +13,8 @@ fi
 
 (
   printf 'PATH=/usr/bin:/bin\n'
-  printf '%s /opt/with-venv /opt/bin/sync-artwork.rb' \
-    "${CRON_SCHEDULE:-0 10 * * *}"
+  printf '%s %s /opt/with-venv /opt/bin/sync-artwork.rb' \
+    "${CRON_SCHEDULE:-0 10 * * *}" "${CRON_USER:-root}"
   echo
 ) > /etc/cron.d/frame-art
 
