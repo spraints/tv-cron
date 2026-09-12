@@ -2,18 +2,10 @@
 
 set -eu
 
-ok=true
-if [ -z "${FRAME_TV_ADDR:-}" ]; then
-  ok=false
-  echo error: FRAME_TV_ADDR must be set in environment.
-fi
-if ! $ok; then
-  exit 1
-fi
-
 (
   printf 'PATH=/usr/bin:/bin\n'
   printf 'FRAME_TV_ADDR=%s\n' "$FRAME_TV_ADDR"
+  printf 'DATA_DIR=%s\n' "$DATA_DIR"
   printf '%s %s /opt/with-venv /opt/bin/sync-artwork.rb > /var/data/sync-artwork.log 2>&1' \
     "${CRON_SCHEDULE:-0 10 * * *}" "${CRON_USER:-root}"
   echo
