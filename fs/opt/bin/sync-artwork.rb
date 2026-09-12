@@ -24,7 +24,7 @@ def main
     puts "==> #{image_url}"
 
     IO.popen(["samsungtv", "--host", frame_host, "--token-file", token_file,
-              "art-upload", "--url", image_url]) do |f|
+              "art-upload", "--url", image_url, "--matte", "none"]) do |f|
       output = f.read
       if output =~ /OK: uploaded -> (.*)/
         today_image_info = {
@@ -42,16 +42,14 @@ def main
     end
   end
 
-  IO.popen(["samsungtv", "--host", frame_host, "--token-file", token_file,
-            "art-mode"]) do |f|
-    mode = f.read.strip
-    puts "*** Art mode is currently #{mode} ***"
-
-    if mode == "on"
-      puts "Setting artwork to #{today_image_info.inspect}"
-      system_must "samsungtv", "--host", frame_host, "--token-file", token_file,
-        "art-display", today_image_info.fetch("content_id")
-    end
+  to_delete_ids = []
+  while state["images"].size > 4
+    to_delete_ids << state["images"].shift["content_id"]
+  end
+  if !to_delete_ids.empty?
+    system_must "samsungtv", "--host", frame_host, "--token-file", token_file,
+      "art-delete-list", *to_delete_ids
+    state.save!
   end
 end
 
