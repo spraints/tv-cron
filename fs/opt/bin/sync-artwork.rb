@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 
 require "digest/sha1"
+require "fastimage"
 require "net/http"
 require "nokogiri"
 require "thread"
@@ -23,8 +24,17 @@ def main
     image_url = get_wikiart_image_of_the_day
     puts "==> #{image_url}"
 
-    IO.popen(["samsungtv", "--host", frame_host, "--token-file", token_file,
-              "art-upload", "--url", image_url, "--matte", "none"]) do |f|
+    # TV is 16:9 (1.7777). If the image is close to that, 
+    img_width, img_height = FastImage.size(image_url)
+    aspect_ratio = img_width.to_f / img_height.to_f
+    puts "  aspect_ratio = #{img_width} / #{img_height} => #{aspect_ratio}"
+    is_close = aspect_ratio > 1.2 && aspect_ratio < 2.0
+    matte = is_close ? ["--matte", "none"] : []
+
+    cmd = ["samsungtv", "--host", frame_host, "--token-file", token_file,
+           "art-upload", "--url", image_url, *matte]
+    puts "$ #{cmd.join(" ")}"
+    IO.popen(cmd) do |f|
       output = f.read
       if output =~ /OK: uploaded -> (.*)/
         today_image_info = {

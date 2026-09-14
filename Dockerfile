@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     python3-venv \
     ruby3.3 \
+    ruby-fastimage \
     ruby-nokogiri \
     && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
