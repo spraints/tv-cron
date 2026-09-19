@@ -20,7 +20,7 @@ def main
 
   state = State.new(state_file)
 
-  today_image_info = state["images"].find { |i| i["date"] == today }
+  today_image_info = state.images.find { |i| i["date"] == today }
   if today_image_info.nil?
     puts "[#{today}] Getting wikiart's image of the day..."
     image_url = get_wikiart_image_of_the_day
@@ -45,7 +45,7 @@ def main
           "date" => today,
           "uploaded_at" => now.to_i,
         }
-        state["images"] << today_image_info
+        state.images << today_image_info
         state.save!
       else
         puts output
@@ -54,12 +54,17 @@ def main
     end
   end
 
-  keep, delete = state["images"].partition { |img| img_expired?(img, expiration: expiration) }
+  delete, keep = state.images.partition { |img| img_expired?(img, expiration: expiration) }
   if !delete.empty?
-    to_delete_ids = delete.map { |img| img["content_id"] }
-    system_must "samsungtv", "--host", frame_host, "--token-file", token_file,
-      "art-delete-list", *to_delete_ids
-    state["images"] = keep
+    delete.each do |img|
+      # OK for this to fail if the image is already deleted.
+      cmd =["samsungtv", "--host", frame_host, "--token-file", token_file,
+        "art-delete-list", img["content_id"]]
+      puts "$ #{cmd.join(" ")}"
+      system(*cmd)
+    end
+    puts "Saving #{keep.size} images ..."
+    state.images = keep
     state.save!
   end
 end
@@ -79,8 +84,12 @@ class State
     @data = {"images" => []}
   end
 
-  def [](key)
-    @data.fetch(key)
+  def images
+    @data["images"] ||= []
+  end
+
+  def images=(list)
+    @data["images"] = list
   end
 
   def save!
