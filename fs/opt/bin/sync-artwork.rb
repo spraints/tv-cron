@@ -58,7 +58,7 @@ def main
   if !delete.empty?
     delete.each do |img|
       cmd =["samsungtv", "--host", frame_host, "--token-file", token_file,
-        "art-delete-list", img["content_id"]]
+        "art-delete", img["content_id"]]
       puts "$ #{cmd.join(" ")}"
 
       r, w = IO.pipe
