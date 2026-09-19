@@ -64,7 +64,7 @@ def main
       r, w = IO.pipe
       pid = spawn(*cmd, err: w)
       w.close
-      stderr = r.read
+      stderr = r.read.force_encoding("BINARY")
       Process.wait(pid)
       case
       # If the image was there and is now deleted, we get exit code 0.
