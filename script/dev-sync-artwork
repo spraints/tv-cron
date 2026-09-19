@@ -1,0 +1,29 @@
+#!/bin/bash
+#/ Usage: script/dev-sync-artwork
+#/
+#/ Runs fs/opt/bin/sync-artwork.rb with a stub for samsungtv
+#/ (dev-env/bin/samsungtv) and dev-env/data as the data dir.
+#/
+#/ Assumes you have Ruby 3.3 (or rv or rvm or rbenv) set up already and
+#/ activated in the environment.
+
+set -eu
+
+root="$(cd "$(dirname "$0")/.."; pwd -P)"
+dev_env="${root}/dev-env"
+cd "${dev_env}"
+
+export BUNDLE_PATH="${dev_env}/.bundle"
+if ! bundle config path | grep -q "${BUNDLE_PATH}"; then
+  bundle config
+  echo "error: bundler config is not working as expected"
+  exit 1
+fi
+
+bundle install --quiet
+
+export PATH="${dev_env}/bin:${PATH}"
+export FRAME_TV_ADDR="127.0.0.1:99999"
+export DATA_DIR="${dev_env}/data"
+mkdir -p "${DATA_DIR}"
+bundle exec ruby ../fs/opt/bin/sync-artwork.rb

@@ -1,0 +1,4 @@
+source "https://rubygems.org"
+# Match the versions that are installed in the image.
+gem "fastimage", "2.4.0"
+gem "nokogiri", "1.18.2"

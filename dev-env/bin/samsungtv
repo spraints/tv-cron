@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+require "digest/sha1"
+
+tv_addr = ENV["FRAME_TV_ADDR"]
+token_file = File.join(ENV["DATA_DIR"], "tv-token")
+
+loop do
+  case [ARGV[0], ARGV[1]]
+  when ["--host", tv_addr]
+    ARGV.shift
+    ARGV.shift
+  when ["--token-file", token_file]
+    ARGV.shift
+    ARGV.shift
+  else
+    break
+  end
+end
+
+command = ARGV.shift
+case
+when command == "art-upload" && ARGV[0] == "--url"
+  url = ARGV[1]
+  content_id = "FAKE-#{Digest::SHA1.hexdigest(url)[0,8]}"
+  $stderr.puts "art-upload with URL = #{url}"
+  $stderr.puts "content id is #{content_id}"
+  puts "OK: uploaded -> #{content_id}"
+  exit 0
+else
+  $stderr.puts "error: unsupported command #{command} #{ARGV.inspect}"
+  exit 1
+end
