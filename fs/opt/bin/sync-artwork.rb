@@ -57,11 +57,28 @@ def main
   delete, keep = state.images.partition { |img| img_expired?(img, expiration: expiration) }
   if !delete.empty?
     delete.each do |img|
-      # OK for this to fail if the image is already deleted.
       cmd =["samsungtv", "--host", frame_host, "--token-file", token_file,
         "art-delete-list", img["content_id"]]
       puts "$ #{cmd.join(" ")}"
-      system(*cmd)
+
+      r, w = IO.pipe
+      pid = spawn(*cmd, err: w)
+      w.close
+      stderr = r.read
+      Process.wait(pid)
+      case
+      # If the image was there and is now deleted, we get exit code 0.
+      when $?.success?
+        puts "==> deleted #{img["content_id"]}"
+      # If the image is already deleted, the command will fail and say on stderr:
+      #   ResponseError: `delete_image_list` request failed with error number -10
+      when stderr =~ /request failed with error number -10/
+        puts "==> previously deleted #{img["content_id"]}"
+      else
+        $stderr.puts stderr
+        puts "==> FAIL"
+        exit 1
+      end
     end
     puts "Saving #{keep.size} images ..."
     state.images = keep

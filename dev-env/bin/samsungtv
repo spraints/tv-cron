@@ -27,6 +27,13 @@ when command == "art-upload" && ARGV[0] == "--url"
   $stderr.puts "content id is #{content_id}"
   puts "OK: uploaded -> #{content_id}"
   exit 0
+when command == "art-delete-list"
+  $stderr.puts \
+    "blah 1",
+    "blah 2",
+    "blah blah request failed with error number -10 blah blah",
+    "blah last"
+  exit 1
 else
   $stderr.puts "error: unsupported command #{command} #{ARGV.inspect}"
   exit 1
