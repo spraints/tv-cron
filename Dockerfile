@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ruby3.3 \
     ruby-fastimage \
     ruby-nokogiri \
+    vim \
     && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
