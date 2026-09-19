@@ -16,6 +16,8 @@ def main
 
   now = Time.now
   today = now.strftime("%Y-%m-%d")
+  expiration = (now - 4 * 86400).strftime("%Y-%m-%d") # 4 days ago
+
   state = State.new(state_file)
 
   today_image_info = state["images"].find { |i| i["date"] == today }
@@ -52,15 +54,21 @@ def main
     end
   end
 
-  to_delete_ids = []
-  while state["images"].size > 4
-    to_delete_ids << state["images"].shift["content_id"]
-  end
-  if !to_delete_ids.empty?
+  keep, delete = state["images"].partition { |img| img_expired?(img, expiration: expiration) }
+  if !delete.empty?
+    to_delete_ids = delete.map { |img| img["content_id"] }
     system_must "samsungtv", "--host", frame_host, "--token-file", token_file,
       "art-delete-list", *to_delete_ids
+    state["images"] = keep
     state.save!
   end
+end
+
+def img_expired?(img, expiration:)
+  img_state = img["state"]
+  return false if img_state == "keep"
+  return true if img_state == "delete"
+  return img["date"] < expiration
 end
 
 class State
